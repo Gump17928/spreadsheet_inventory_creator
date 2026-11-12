@@ -1,0 +1,3 @@
+-r requirements.txt
+ruff
+pywin32; sys_platform == "win32"
