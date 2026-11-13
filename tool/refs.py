@@ -2,7 +2,6 @@
 from layout import (
     CATALOG_LAST,
     FIRST_ROW,
-    HEADER_ROW,
     INV_LAST,
     MATRIX_FIRST_TITLE,
     MATRIX_LAST_TITLE,
@@ -22,6 +21,11 @@ def quote(sheet):
 def column(sheet, col, last_row):
     """One column of data rows: `Sheet!$C$6:$C$99`."""
     return f"{quote(sheet)}!${col}${FIRST_ROW}:${col}${last_row}"
+
+
+def at(sheet, col, row):
+    """One cell, absolute: `People!$D$9`."""
+    return f"{quote(sheet)}!${col}${row}"
 
 
 def inv(col):
@@ -53,4 +57,3 @@ def growing_list(sheet, col, last_row):
 
 ROLE_NAMES = column(Sheet.ROLES, ROLE_COL, ROLES_LAST)
 ROLE_GRID = f"{quote(Sheet.ROLES)}!$B${FIRST_ROW}:${ROLE_GRID_LAST_COL}${ROLES_LAST}"
-ROLE_TITLES = f"{quote(Sheet.ROLES)}!$B${HEADER_ROW}:${ROLE_GRID_LAST_COL}${HEADER_ROW}"

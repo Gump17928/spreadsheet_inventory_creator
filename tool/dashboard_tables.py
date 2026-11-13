@@ -12,20 +12,33 @@ from layout import (
     N_TITLES,
     Cat,
     Lst,
+    Mat,
     Ppl,
     Sheet,
     col_letter,
 )
-from styles import NAVY, ORANGE_TEXT, clear_when_blank, fill, font, header_cell, style_cells
-from vocab import ATTENTION, DASHBOARD_STATUSES, HAVE, STATUS_STYLE, Status
+from styles import (
+    BAR,
+    BRASS_DARK,
+    CRIMSON,
+    RUST,
+    SIZE_BODY,
+    SIZE_SMALL,
+    clear_when_blank,
+    fill,
+    font,
+    header_cell,
+    style_cells,
+)
+from vocab import ATTENTION, DASHBOARD_STATUSES, HAVE, STATUS_STYLE, Active, Status
 
 FIRST_STATUS_COL = 3
 COVERAGE_COL = FIRST_STATUS_COL + len(DASHBOARD_STATUSES)
 ATTENTION_COL = COVERAGE_COL + 1
 NAME_WIDTH, SECOND_WIDTH, STATUS_WIDTH, SUMMARY_WIDTH = 28, 20, 11, 12
-HEADER_HEIGHT = 30
-LOW_COVERAGE = 0.75       # coverage below this is shown in red
-BAR_COLOUR = "8FB4E3"
+HEADER_HEIGHT = 40
+LOW_COVERAGE = 0.75       # coverage below this is shown in crimson
+BAR_COLOUR = BAR
 PERCENT_FORMAT = "0%"
 
 STATUS_LETTER = {status: col_letter(FIRST_STATUS_COL + i) for i, status in enumerate(DASHBOARD_STATUSES)}
@@ -69,13 +82,13 @@ def _attention(row):
 
 def _write_head(ws, table):
     ws[f"A{table.header_row - 1}"] = table.title
-    ws[f"A{table.header_row - 1}"].font = font(12, True, NAVY)
+    ws[f"A{table.header_row - 1}"].font = font(SIZE_BODY, True, BRASS_DARK)
     header_cell(ws, table.header_row, 1, table.name_header, width=NAME_WIDTH)
     header_cell(ws, table.header_row, 2, table.second_header, width=SECOND_WIDTH)
     for index, status in enumerate(DASHBOARD_STATUSES):
         cell = header_cell(ws, table.header_row, FIRST_STATUS_COL + index, status.value, width=STATUS_WIDTH)
         style = STATUS_STYLE[status]
-        cell.fill, cell.font = fill(style.fill), Font(name="Calibri", bold=True, size=9, color=style.font)
+        cell.fill, cell.font = fill(style.fill), font(SIZE_SMALL, True, style.font)
     header_cell(ws, table.header_row, COVERAGE_COL, "Coverage", calc=True, width=STATUS_WIDTH)
     header_cell(ws, table.header_row, ATTENTION_COL, "Needs Attention", calc=True, width=SUMMARY_WIDTH)
     ws.row_dimensions[table.header_row].height = HEADER_HEIGHT
@@ -99,11 +112,11 @@ def _format_rows(ws, table):
     coverage = f"{COVERAGE_LETTER}{table.first}:{COVERAGE_LETTER}{table.last}"
     ws.conditional_formatting.add(coverage, FormulaRule(
         formula=[f"AND(ISNUMBER({COVERAGE_LETTER}{table.first}),{COVERAGE_LETTER}{table.first}<{LOW_COVERAGE})"],
-        font=Font(color="9C0006", bold=True)))
+        font=Font(color=CRIMSON, bold=True)))
     ws.conditional_formatting.add(coverage, DataBarRule(
         start_type="num", start_value=0, end_type="num", end_value=1, color=BAR_COLOUR, showValue=True))
     ws.conditional_formatting.add(f"{ATTENTION_LETTER}{table.first}:{ATTENTION_LETTER}{table.last}", CellIsRule(
-        operator="greaterThan", formula=["0"], font=Font(color=ORANGE_TEXT, bold=True)))
+        operator="greaterThan", formula=["0"], font=Font(color=RUST, bold=True)))
     clear_when_blank(ws, f"A{table.first}:{ATTENTION_LETTER}{table.last}", f"$A{table.first}")
 
 
@@ -136,10 +149,11 @@ def group_table(header_row, software):
 def department_table(header_row):
     """By department: counts statuses straight from the Matrix."""
     def second(row, index):
-        return f'=IF($A{row}="","",COUNTIF({refs.ppl(Ppl.DEPARTMENT)},$A{row}))'
+        return (f'=IF($A{row}="","",COUNTIFS({refs.ppl(Ppl.DEPARTMENT)},$A{row},'
+                f'{refs.ppl(Ppl.NAME)},"?*",{refs.ppl(Ppl.ACTIVE)},"<>{Active.NO}"))')
 
     def status(row, letter):
-        departments = refs.matrix_col("B")
+        departments = refs.matrix_col(Mat.DEPARTMENT)
         return (f'=IF($A{row}="","",SUMPRODUCT(({departments}=$A{row})*({refs.matrix_body()}={letter}${header_row})))')
     return Table("By Department", "Department", "People", header_row, N_SUMMARY_ROWS,
                  _list_name(Lst.DEPARTMENT), second, status)

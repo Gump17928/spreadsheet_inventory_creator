@@ -1,7 +1,13 @@
-"""Formulas for each calculated Inventory column. Every function takes a row number and returns '=...'."""
-from layout import FIRST_ROW, INV_LAST, STALE_DAYS, WARN_DAYS, Cat, Inv, Ppl
-from lookups import not_installed_status, person_value, role_default_by_name, text_or_blank, title_value
-from vocab import Applicability, InstallState, LicenseAssign, LicenseCheck, Status, VersionCheck
+"""Formulas for each Inventory column. Every function takes a row number and returns '=...'.
+
+An Inventory row belongs to one person and one catalog title by position (see `layout.inventory_row`), so these
+formulas point straight at that person's People row and that title's Catalog row.
+"""
+from layout import STALE_DAYS, WARN_DAYS, Cat, Inv, Ppl, catalog_row_for, people_row_for, slot_for
+from lookups import catalog_at, not_installed_status, person_at, role_default_by_slot, text_or_blank
+from vocab import Active, Applicability, InstallState, LicenseAssign, LicenseCheck, Status, VersionCheck
+
+LIVE_MARK = "Y"   # in the hidden LIVE column when the row is in use
 
 
 def _c(col, row):
@@ -9,49 +15,64 @@ def _c(col, row):
     return f"${col}{row}"
 
 
-def _no_key(row):
-    return f'{_c(Inv.KEY, row)}=""'
+def _not_live(row):
+    return f'{_c(Inv.LIVE, row)}=""'
 
 
 def _unless_installed(row, body):
     """Blank unless this row is an installed record."""
-    return f'IF(OR({_no_key(row)},{_c(Inv.STATE, row)}<>"{InstallState.INSTALLED}"),"",{body})'
+    return f'IF(OR({_not_live(row)},{_c(Inv.STATE, row)}<>"{InstallState.INSTALLED}"),"",{body})'
 
 
-def key(row):
-    person, software = _c(Inv.PERSON, row), _c(Inv.SOFTWARE, row)
-    return f'=IF(OR({person}="",{software}=""),"",{person}&"|"&{software})'
+def _mirror(cell):
+    return f'=IF({cell}="","",{cell})'
+
+
+def person(row):
+    """The person's name, shown only on rows whose title slot is in use (spare slots stay blank)."""
+    name = person_at(Ppl.NAME, people_row_for(row))
+    title = catalog_at(Cat.NAME, catalog_row_for(row))
+    return f'=IF(OR({name}="",{title}=""),"",{name})'
+
+
+def software(row):
+    return _mirror(catalog_at(Cat.NAME, catalog_row_for(row)))
 
 
 def computer(row):
-    person = _c(Inv.PERSON, row)
-    return f'=IF({person}="","",{text_or_blank(person_value(Ppl.COMPUTER, person))})'
+    name = _c(Inv.PERSON, row)
+    return f'=IF({name}="","",{text_or_blank(person_at(Ppl.COMPUTER, people_row_for(row)))})'
 
 
 def group(row):
-    software = _c(Inv.SOFTWARE, row)
-    return f'=IF({software}="","",{text_or_blank(title_value(Cat.GROUP, software))})'
+    name = _c(Inv.SOFTWARE, row)
+    return f'=IF({name}="","",{text_or_blank(catalog_at(Cat.GROUP, catalog_row_for(row)))})'
+
+
+def live(row):
+    """In use when both the person and the title exist and the person is not retired."""
+    retired = f'{person_at(Ppl.ACTIVE, people_row_for(row))}="{Active.NO}"'
+    return f'=IF(OR({_c(Inv.PERSON, row)}="",{_c(Inv.SOFTWARE, row)}="",{retired}),"","{LIVE_MARK}")'
 
 
 def applicability(row):
-    person, software = _c(Inv.PERSON, row), _c(Inv.SOFTWARE, row)
     override = _c(Inv.APPL_OVERRIDE, row)
-    default = role_default_by_name(person_value(Ppl.ROLE, person), software)
-    return f'=IF({_no_key(row)},"",IF({override}<>"",{override},{default}))'
+    role = person_at(Ppl.ROLE, people_row_for(row))
+    return f'=IF({_not_live(row)},"",IF({override}<>"",{override},{role_default_by_slot(role, slot_for(row))}))'
 
 
 def expiry(row):
     """The row's own expiry if given, otherwise the catalog's (blank if neither)."""
-    software, override = _c(Inv.SOFTWARE, row), _c(Inv.EXPIRY_OVERRIDE, row)
-    catalog = title_value(Cat.EXPIRY, software)
+    override = _c(Inv.EXPIRY_OVERRIDE, row)
+    catalog = catalog_at(Cat.EXPIRY, catalog_row_for(row))
     body = f'IF({override}<>"",{override},IFERROR(IF({catalog}="","",{catalog}),""))'
     return "=" + _unless_installed(row, body)
 
 
 def version_check(row):
     """Numbers compare numerically (2026 vs 2025); text such as '2025 R2' must match exactly."""
-    version, software = _c(Inv.VERSION, row), _c(Inv.SOFTWARE, row)
-    approved = text_or_blank(title_value(Cat.APPROVED, software))
+    version = _c(Inv.VERSION, row)
+    approved = text_or_blank(catalog_at(Cat.APPROVED, catalog_row_for(row)))
     comparison = (f'IFERROR(IF(VALUE({version})>=VALUE({approved}),"{VersionCheck.CURRENT}","{VersionCheck.OUTDATED}"),'
                   f'IF({version}&""={approved},"{VersionCheck.CURRENT}","{VersionCheck.CHECK}"))')
     body = (f'IF({approved}="","{VersionCheck.NOT_SET}",'
@@ -71,7 +92,7 @@ def license_check(row):
 
 def days_since_verified(row):
     verified = _c(Inv.VERIFIED_ON, row)
-    return f'=IF(OR({_no_key(row)},{verified}=""),"",TODAY()-{verified})'
+    return f'=IF(OR({_not_live(row)},{verified}=""),"",TODAY()-{verified})'
 
 
 def _installed_status(row):
@@ -87,16 +108,11 @@ def _installed_status(row):
             f'IF({unverified},"{Status.VERIFY}","{Status.INSTALLED}")))))')
 
 
-def _not_installed_or_pending(row):
-    state = _c(Inv.STATE, row)
-    return (f'IF({state}="{InstallState.PENDING}","{Status.PENDING}",'
-            f'{not_installed_status(_c(Inv.APPLICABILITY, row))})')
-
-
 def status(row):
-    """The one-word verdict for the row. Duplicates and unknown states win over everything else."""
-    state, row_key = _c(Inv.STATE, row), _c(Inv.KEY, row)
-    keys = f"${Inv.KEY}${FIRST_ROW}:${Inv.KEY}${INV_LAST}"
-    return (f'=IF({_no_key(row)},"",IF(COUNTIF({keys},{row_key})>1,"{Status.DUPLICATE}",'
-            f'IF(OR({state}="",{state}="{InstallState.UNKNOWN}"),"{Status.UNKNOWN}",'
-            f'IF({state}="{InstallState.INSTALLED}",{_installed_status(row)},{_not_installed_or_pending(row)}))))')
+    """The one-word verdict. A blank or 'Not Installed' state follows the person's applicability for the title."""
+    state = _c(Inv.STATE, row)
+    return (f'=IF({_not_live(row)},"",'
+            f'IF({state}="{InstallState.UNKNOWN}","{Status.UNKNOWN}",'
+            f'IF({state}="{InstallState.INSTALLED}",{_installed_status(row)},'
+            f'IF({state}="{InstallState.PENDING}","{Status.PENDING}",'
+            f'{not_installed_status(_c(Inv.APPLICABILITY, row))}))))')

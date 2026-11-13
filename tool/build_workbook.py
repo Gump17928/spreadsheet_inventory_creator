@@ -58,7 +58,8 @@ def add_demo_content(wb, today=None):
     today = today or date.today()
     sheet_catalog.fill_demo(wb[Sheet.CATALOG], today)
     sheet_people.fill_demo(wb[Sheet.PEOPLE])
-    sheet_inventory.write_records(wb[Sheet.INVENTORY], demo_inventory.make_records(today))
+    sheet_inventory.write_records(wb[Sheet.INVENTORY], demo_inventory.make_records(today),
+                                  demo_inventory.PERSON_INDEX, demo_inventory.SLOT_INDEX)
     sheet_person_view.select_person(wb[Sheet.PERSON_VIEW], demo_data.PEOPLE[0].name)
 
 

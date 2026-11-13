@@ -1,9 +1,9 @@
-"""Reusable formula fragments: look a value up in the Catalog, People or Role Defaults sheets.
+"""Reusable formula fragments: read a value from the Catalog, People or Role Defaults sheets.
 
 Each function returns a formula *expression* (no leading '='), so fragments can be nested.
 """
 import refs
-from layout import Cat, Ppl
+from layout import Ppl, Sheet
 from vocab import Applicability, Status
 
 
@@ -12,36 +12,26 @@ def text_or_blank(expr):
     return f'IFERROR({expr}&"","")'
 
 
-def person_value(col, person):
-    """A People column value for the person named in the cell `person`."""
+def person_at(col, people_row):
+    """A People value by row; Inventory and Matrix rows are tied to People rows by position."""
+    return refs.at(Sheet.PEOPLE, col, people_row)
+
+
+def catalog_at(col, catalog_row):
+    """A Catalog value by row; Inventory rows are tied to Catalog rows by position."""
+    return refs.at(Sheet.CATALOG, col, catalog_row)
+
+
+def person_by_name(col, person):
+    """A People column value for the person named in the cell `person` (used where a name is picked)."""
     return f"INDEX({refs.ppl(col)},MATCH({person},{refs.ppl(Ppl.NAME)},0))"
-
-
-def title_match(software):
-    """Row position of a title within the Catalog."""
-    return f"MATCH({software},{refs.cat(Cat.NAME)},0)"
-
-
-def title_value(col, software):
-    """A Catalog column value for the title named in the cell `software`."""
-    return f"INDEX({refs.cat(col)},{title_match(software)})"
-
-
-def _blank_is_optional(cell):
-    optional = Applicability.OPTIONAL
-    return f'IFERROR(IF({cell}&""="","{optional}",{cell}),"{optional}")'
 
 
 def role_default_by_slot(role, slot):
     """Role Defaults entry for catalog slot `slot` (0-based) and the role in cell `role`. Blank means Optional."""
+    optional = Applicability.OPTIONAL
     cell = f"INDEX({refs.ROLE_GRID},MATCH({role},{refs.ROLE_NAMES},0),{slot + 1})"
-    return _blank_is_optional(cell)
-
-
-def role_default_by_name(role, software):
-    """Role Defaults entry for the title named in cell `software`. Blank means Optional."""
-    cell = f"INDEX({refs.ROLE_GRID},MATCH({role},{refs.ROLE_NAMES},0),MATCH({software},{refs.ROLE_TITLES},0))"
-    return _blank_is_optional(cell)
+    return f'IFERROR(IF({cell}&""="","{optional}",{cell}),"{optional}")'
 
 
 def not_installed_status(applicability):

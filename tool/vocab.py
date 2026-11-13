@@ -72,7 +72,11 @@ class Status(StrEnum):
     UNKNOWN = "Unknown"
     NOT_INSTALLED = "Not Installed"
     NOT_APPLICABLE = "N/A"
-    DUPLICATE = "Duplicate"
+
+
+class Active(StrEnum):
+    YES = "Yes"
+    NO = "No"
 
 
 @dataclass(frozen=True)
@@ -80,23 +84,23 @@ class StatusStyle:
     fill: str
     font: str
     bold: bool
+    symbol: str      # shown before the status text by the conditional format, so status reads without colour
     meaning: str
     action: str
 
 
-_COLOURS = {   # status -> (cell fill, font colour, bold)
-    Status.INSTALLED: ("D9EAD3", "1E5631", False),
-    Status.OUTDATED: ("FFE699", "7F6000", False),
-    Status.EXPIRING: ("FCE4D6", "9C4A00", False),
-    Status.LICENSE_ISSUE: ("C0504D", "FFFFFF", True),
-    Status.VERIFY: ("DDEBF7", "1F4E78", False),
-    Status.PENDING: ("E4DFEC", "5B3F8C", False),
-    Status.MISSING: ("FFC7CE", "9C0006", True),
-    Status.REVIEW: ("F8D7F0", "8E2A78", False),
-    Status.UNKNOWN: ("FFF9DB", "7F6000", False),
-    Status.NOT_INSTALLED: ("F2F2F2", "595959", False),
-    Status.NOT_APPLICABLE: ("D9D9D9", "7F7F7F", False),
-    Status.DUPLICATE: ("404040", "FFFFFF", True),
+_COLOURS = {   # status -> (cell fill, font colour, bold, symbol)
+    Status.INSTALLED: ("DCE4C6", "2F3D12", False, "●"),
+    Status.OUTDATED: ("EFDCA0", "4F3A05", False, "▲"),
+    Status.EXPIRING: ("EBC7A0", "5E2E08", False, "▲"),
+    Status.LICENSE_ISSUE: ("8E1B1B", "FFFFFF", True, "✕"),
+    Status.VERIFY: ("D3DAE2", "26323F", False, "◆"),
+    Status.PENDING: ("DCD6E6", "3F3558", False, "…"),
+    Status.MISSING: ("B3202A", "FFFFFF", True, "✕"),
+    Status.REVIEW: ("E6D0DA", "5A2342", False, "▲"),
+    Status.UNKNOWN: ("EFE8D2", "4D4524", False, "?"),
+    Status.NOT_INSTALLED: ("F6F3EE", "6B6254", False, "○"),
+    Status.NOT_APPLICABLE: ("DAD6CF", "6E6A63", False, "–"),
 }
 _TEXT = {      # status -> (meaning, what to do)
     Status.INSTALLED: ("Installed, current, licensed and recently verified.", "Nothing."),
@@ -106,12 +110,11 @@ _TEXT = {      # status -> (meaning, what to do)
     Status.VERIFY: ("Installed, but the data is stale or the version/license is unverified.",
                     "Re-check the machine and update the row."),
     Status.PENDING: ("Install requested or in progress.", "Follow up until installed."),
-    Status.MISSING: ("Required for this person's role but not installed.", "Install it."),
+    Status.MISSING: ("Required for this person's role and not installed (the default for a blank row).", "Install it."),
     Status.REVIEW: ("Installed although it is marked Not Applicable.", "Remove it or change the applicability."),
-    Status.UNKNOWN: ("A record exists but the install state is unknown or blank.", "Check the machine."),
-    Status.NOT_INSTALLED: ("Not installed and optional for this person.", "Nothing."),
+    Status.UNKNOWN: ("Install state was set to Unknown.", "Check the machine."),
+    Status.NOT_INSTALLED: ("Not installed and optional for this person (the default for a blank row).", "Nothing."),
     Status.NOT_APPLICABLE: ("Not applicable to this person's role.", "Nothing."),
-    Status.DUPLICATE: ("The same person + software appears on more than one row.", "Delete the extra row."),
 }
 STATUS_STYLE = {status: StatusStyle(*_COLOURS[status], *_TEXT[status]) for status in Status}
 

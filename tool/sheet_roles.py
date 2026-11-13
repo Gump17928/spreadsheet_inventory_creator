@@ -9,8 +9,10 @@ from styles import (
     clear_when_blank,
     header_cell,
     page_setup,
+    protect_sheet,
     style_cells,
     title_block,
+    unlock,
     write_headers,
 )
 
@@ -32,17 +34,20 @@ def _write_title_headers(ws):
 def create(wb):
     ws = wb.create_sheet(Sheet.ROLES)
     title_block(ws, "Role Defaults", "What each role is expected to have. Software columns follow the Catalog order. "
-                                     "Blank = Optional. Override one person on the Inventory sheet.")
+                                     "Blank = Optional. Add roles in the next empty row; do not insert or delete.")
     ws.sheet_properties.tabColor = TAB_REFERENCE
     write_headers(ws, [Col(ROLE_COL, "Role", ROLE_COL_WIDTH)], HEADER_HEIGHT)
     _write_title_headers(ws)
     style_cells(ws, f"{ROLE_COL}{FIRST_ROW}:{ROLE_COL}{ROLES_LAST}")
     style_cells(ws, GRID, align="center")
+    unlock(ws, f"{ROLE_COL}{FIRST_ROW}:{ROLE_COL}{ROLES_LAST}")
+    unlock(ws, GRID)
     validation.list_rule(ws, GRID, "=ApplicabilityList", "Applicability", "Required, Optional or Not Applicable.")
     applicability_colours(ws, GRID)
     clear_when_blank(ws, f"B{HEADER_ROW}:{ROLE_GRID_LAST_COL}{HEADER_ROW}", f"B${HEADER_ROW}")
     ws.freeze_panes = f"B{FIRST_ROW}"
     page_setup(ws, f"{HEADER_ROW}:{HEADER_ROW}")
+    protect_sheet(ws)
 
 
 def fill_starter(ws):

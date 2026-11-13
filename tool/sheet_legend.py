@@ -1,18 +1,31 @@
-"""Legend sheet: what every status, state and colour means."""
+"""Key sheet: what every status, state and colour means."""
 from openpyxl.styles import Alignment
 
 from layout import Sheet
-from styles import BORDER, NAVY, PALE, TAB_GUIDE, fill, font, header_cell, page_setup, title_block
+from styles import (
+    BORDER,
+    BRASS_DARK,
+    PARCHMENT,
+    SIZE_BODY,
+    TAB_GUIDE,
+    fill,
+    font,
+    header_cell,
+    page_setup,
+    scaled,
+    title_block,
+)
 from vocab import STATUS_STYLE
 
-STATUS_COL_WIDTH, MEANING_COL_WIDTH, ACTION_COL_WIDTH = 18, 70, 38
-FIRST_ROW = 5
+STATUS_COL_WIDTH, MEANING_COL_WIDTH, ACTION_COL_WIDTH = 20, 78, 38
+FIRST_ROW = 6
 
 # (heading, [(term, meaning)])
 REFERENCE_BLOCKS = [
-    ("INSTALL STATE  (you choose, per Inventory row)", [
+    ("INSTALL STATE  (typed, per Inventory row)", [
+        ("(blank)", "Not installed. The status then follows the person's applicability for the title."),
         ("Installed", "Software is on the person's computer."),
-        ("Not Installed", "Row kept on purpose, e.g. to record an override or a note. Rows are optional here."),
+        ("Not Installed", "Same as blank; use it to say so explicitly."),
         ("Pending", "Requested or approved but not installed yet."),
         ("Unknown", "Needs a physical or remote check.")]),
     ("APPLICABILITY  (from Role Defaults; override per person on Inventory)", [
@@ -33,27 +46,28 @@ REFERENCE_BLOCKS = [
         ("Check", "Text versions such as '2025 R2' must match the approved version exactly, or they are flagged."),
         ("n/a", "No approved version is set in the Catalog.")]),
     ("COLOURS", [
-        ("Navy header", "You type or choose a value."),
-        ("Grey header / cells", "Calculated automatically - don't type here."),
-        ("Red date", "License date is in the past."),
-        ("Orange date", "License expires within the warning window (Lists sheet)."),
-        ("Green tab", "Data entry (Inventory)."),
-        ("Blue tab", "Reference tables you maintain (Catalog, People, Role Defaults, Lists)."),
-        ("Purple tab", "Reports, read-only (Matrix, Person View, Dashboard).")]),
+        ("Rose header", "You type or choose a value."),
+        ("Tan italic header, shaded cells", "Calculated - don't type here."),
+        ("Greyed-out row on Inventory", "Not Applicable to that person's role."),
+        ("Crimson date", "License date is in the past."),
+        ("Rust date", "License expires within the warning window (Lists sheet)."),
+        ("Brass tab", "Data entry (Inventory)."),
+        ("Black tab", "Reference tables you maintain (Catalog, People, Role Defaults, Lists)."),
+        ("Rose tab", "Reports, read-only (Matrix, Person View, Dashboard).")]),
 ]
 
 
 def _status_table(ws):
     """The coloured status key; returns the next free row."""
-    ws[f"A{FIRST_ROW - 2}"] = "STATUS  (calculated on Inventory, shown on Matrix / Person View / Dashboard)"
-    ws[f"A{FIRST_ROW - 2}"].font = font(10, True, NAVY)
+    ws[f"A{FIRST_ROW - 3}"] = "STATUS  (calculated on Inventory, shown on Matrix, Person View and Dashboard)"
+    ws[f"A{FIRST_ROW - 3}"].font = font(SIZE_BODY, True, BRASS_DARK)
     for index, text in enumerate(("Status", "Meaning", "What to do"), start=1):
         header_cell(ws, FIRST_ROW - 1, index, text)
     row = FIRST_ROW
     for status, style in STATUS_STYLE.items():
-        ws[f"A{row}"], ws[f"B{row}"], ws[f"C{row}"] = status.value, style.meaning, style.action
+        ws[f"A{row}"], ws[f"B{row}"], ws[f"C{row}"] = f"{style.symbol} {status.value}", style.meaning, style.action
         ws[f"A{row}"].fill = fill(style.fill)
-        ws[f"A{row}"].font = font(10, True, style.font)
+        ws[f"A{row}"].font = font(SIZE_BODY, True, style.font)
         ws[f"A{row}"].alignment = Alignment(horizontal="center")
         for letter in "ABC":
             ws[f"{letter}{row}"].border = BORDER
@@ -66,12 +80,13 @@ def _status_table(ws):
 def _reference_block(ws, row, heading, entries):
     """One heading plus its term/meaning rows; returns the next free row."""
     ws[f"A{row}"] = heading
-    ws[f"A{row}"].font = font(10, True, NAVY)
+    ws[f"A{row}"].font = font(SIZE_BODY, True, BRASS_DARK)
     row += 1
     for term, meaning in entries:
         ws[f"A{row}"], ws[f"B{row}"] = term, meaning
-        ws[f"A{row}"].fill = fill(PALE)
-        ws[f"A{row}"].font = font(10, True)
+        ws[f"A{row}"].fill = fill(PARCHMENT)
+        ws[f"A{row}"].font = font(SIZE_BODY, True)
+        ws[f"A{row}"].alignment = Alignment(wrap_text=True, vertical="top")
         ws[f"B{row}"].font = font()
         for letter in "ABC":
             ws[f"{letter}{row}"].border = BORDER
@@ -81,11 +96,10 @@ def _reference_block(ws, row, heading, entries):
 
 def create(wb):
     ws = wb.create_sheet(Sheet.LEGEND)
-    title_block(ws, "Legend", "What every status, state and colour means.")
+    title_block(ws, "Key", "What every status, state and colour means.")
     ws.sheet_properties.tabColor = TAB_GUIDE
-    ws.column_dimensions["A"].width = STATUS_COL_WIDTH
-    ws.column_dimensions["B"].width = MEANING_COL_WIDTH
-    ws.column_dimensions["C"].width = ACTION_COL_WIDTH
+    for letter, width in (("A", STATUS_COL_WIDTH), ("B", MEANING_COL_WIDTH), ("C", ACTION_COL_WIDTH)):
+        ws.column_dimensions[letter].width = scaled(width)
     row = _status_table(ws)
     for heading, entries in REFERENCE_BLOCKS:
         row = _reference_block(ws, row, heading, entries)

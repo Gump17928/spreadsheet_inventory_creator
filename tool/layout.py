@@ -7,10 +7,10 @@ from openpyxl.utils import column_index_from_string, get_column_letter
 HEADER_ROW = 5
 FIRST_ROW = 6
 
-N_PEOPLE = 150
-N_TITLES = 40
+N_PEOPLE = 100
+N_TITLES = 30
 N_ROLES = 30
-N_RECORDS = 1500
+N_RECORDS = N_PEOPLE * N_TITLES    # Inventory has one row for every person and every title slot
 N_LIST_SLOTS = 20       # rows in each editable list on the Lists sheet
 N_SUMMARY_ROWS = 12     # rows in the Dashboard group and department tables
 
@@ -34,9 +34,32 @@ def col_index(letter):
     return column_index_from_string(letter)
 
 
+def inventory_row(person_index, slot):
+    """Inventory row for the person at `person_index` on People and the title at `slot` on the Catalog (both 0-based).
+
+    Row position is the only link between an Inventory row and its person and title, so these never move.
+    """
+    return FIRST_ROW + person_index * N_TITLES + slot
+
+
+def people_row_for(inv_row):
+    """People row of the person an Inventory row belongs to."""
+    return FIRST_ROW + (inv_row - FIRST_ROW) // N_TITLES
+
+
+def slot_for(inv_row):
+    """0-based Catalog slot of the title an Inventory row belongs to."""
+    return (inv_row - FIRST_ROW) % N_TITLES
+
+
+def catalog_row_for(inv_row):
+    """Catalog row of the title an Inventory row belongs to."""
+    return FIRST_ROW + slot_for(inv_row)
+
+
 class Sheet:
-    START = "Start Here"
-    LEGEND = "Legend"
+    START = "About"
+    LEGEND = "Key"
     INVENTORY = "Inventory"
     MATRIX = "Matrix"
     PERSON_VIEW = "Person View"
@@ -56,8 +79,8 @@ class Inv:
     PERSON, COMPUTER, SOFTWARE, GROUP, STATE, VERSION = "A", "B", "C", "D", "E", "F"
     INSTALLED_ON, ASSIGNMENT, EXPIRY_OVERRIDE, APPL_OVERRIDE = "G", "H", "I", "J"
     VERIFIED_ON, VERIFIED_BY, NOTES = "K", "L", "M"
-    APPLICABILITY, EXPIRY, VERSION_CHECK, LICENSE_CHECK, DAYS_SINCE, STATUS, KEY = "N", "O", "P", "Q", "R", "S", "T"
-    FIRST_INPUT, LAST_INPUT, FIRST_CALC, LAST_CALC = "A", "M", "N", "T"
+    APPLICABILITY, EXPIRY, VERSION_CHECK, LICENSE_CHECK, DAYS_SINCE, STATUS, LIVE = "N", "O", "P", "Q", "R", "S", "T"
+    LAST_CALC = "T"
 
 
 class Cat:
@@ -69,7 +92,7 @@ class Cat:
 
 class Ppl:
     """People columns."""
-    NAME, EMPLOYEE_ID, DEPARTMENT, ROLE, LOCATION, COMPUTER, MANAGER, NOTES = "ABCDEFGH"
+    NAME, EMPLOYEE_ID, DEPARTMENT, ROLE, ACTIVE, LOCATION, COMPUTER, MANAGER, NOTES = "ABCDEFGHI"
 
 
 class Lst:

@@ -2,16 +2,14 @@
 from openpyxl.workbook.defined_name import DefinedName
 
 import refs
-from layout import CATALOG_LAST, PEOPLE_LAST, ROLE_COL, ROLES_LAST, Cat, Ppl, Sheet
+from layout import PEOPLE_LAST, ROLE_COL, ROLES_LAST, Ppl, Sheet
 
 PEOPLE_LIST = "PeopleList"
 ROLE_LIST = "RoleList"
-SOFTWARE_LIST = "SoftwareList"
 
 GROWING_LISTS = {
     PEOPLE_LIST: (Sheet.PEOPLE, Ppl.NAME, PEOPLE_LAST),
     ROLE_LIST: (Sheet.ROLES, ROLE_COL, ROLES_LAST),
-    SOFTWARE_LIST: (Sheet.CATALOG, Cat.NAME, CATALOG_LAST),
 }
 
 

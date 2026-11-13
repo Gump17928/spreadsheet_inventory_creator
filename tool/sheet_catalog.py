@@ -8,12 +8,14 @@ from layout import CATALOG_LAST, FIRST_ROW, HEADER_ROW, WARN_DAYS, Cat, Inv, She
 from refs import inv
 from starter_data import TITLES
 from styles import (
+    CRIMSON,
+    RUST,
     TAB_REFERENCE,
     Col,
-    band,
     date_flags,
     note,
     page_setup,
+    protect_sheet,
     style_columns,
     text_flags,
     title_block,
@@ -34,9 +36,8 @@ COLS = [
     Col(Cat.DAYS_LEFT, "Days to Expiry", 12, True, "0", "center"),
     Col(Cat.LICENSE_STATUS, "License Status", 16, True, align="center"),
 ]
-INPUT_RANGE = f"{Cat.NAME}{FIRST_ROW}:{Cat.NOTES}{CATALOG_LAST}"
-SEAT_STATUS_FLAGS = {SeatStatus.OVER: "9C0006", SeatStatus.MONITOR: "7F6000"}
-LICENSE_STATUS_FLAGS = {LicenseCheck.EXPIRED: "C00000", LicenseCheck.EXPIRING: "9C4A00"}
+SEAT_STATUS_FLAGS = {SeatStatus.OVER: CRIMSON, SeatStatus.MONITOR: RUST}
+LICENSE_STATUS_FLAGS = {LicenseCheck.EXPIRED: CRIMSON, LicenseCheck.EXPIRING: RUST}
 
 
 def _cell(col, row):
@@ -95,7 +96,6 @@ def _add_validation(ws):
 
 
 def _add_formatting(ws):
-    band(ws, INPUT_RANGE)
     text_flags(ws, f"{Cat.SEAT_STATUS}{FIRST_ROW}:{Cat.SEAT_STATUS}{CATALOG_LAST}", SEAT_STATUS_FLAGS)
     text_flags(ws, f"{Cat.LICENSE_STATUS}{FIRST_ROW}:{Cat.LICENSE_STATUS}{CATALOG_LAST}", LICENSE_STATUS_FLAGS)
     date_flags(ws, f"{Cat.EXPIRY}{FIRST_ROW}:{Cat.EXPIRY}{CATALOG_LAST}")
@@ -103,10 +103,10 @@ def _add_formatting(ws):
 
 def create(wb):
     ws = wb.create_sheet(Sheet.CATALOG)
-    title_block(ws, "Software Catalog", "One row per software title. Defines groups, approved versions and license "
-                                        "details. Add new titles in the next empty row.")
+    title_block(ws, "Software Catalog", "One row per software title: group, approved version and license details. "
+                                        "Add new titles in the next empty row - never insert, delete or sort rows.")
     ws.sheet_properties.tabColor = TAB_REFERENCE
-    note(ws, "A3", "Navy headers = you type or choose.  Grey headers and cells = calculated automatically.")
+    note(ws, "A3", "Rose headers = you type or choose.  Tan italic headers and shaded cells = calculated.")
     write_headers(ws, COLS)
     style_columns(ws, COLS, CATALOG_LAST)
     _write_formulas(ws)
@@ -115,6 +115,7 @@ def create(wb):
     ws.freeze_panes = f"B{FIRST_ROW}"
     ws.auto_filter.ref = f"A{HEADER_ROW}:{Cat.LAST_CALC}{CATALOG_LAST}"
     page_setup(ws, f"{HEADER_ROW}:{HEADER_ROW}")
+    protect_sheet(ws)
 
 
 def fill_starter(ws):

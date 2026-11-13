@@ -8,6 +8,8 @@ from starter_data import TITLES, SoftwareTitle, role_default
 from vocab import Applicability, InstallState, LicenseAssign, LicenseModel
 
 SEED = 7
+PERSON_INDEX = {person.name: index for index, person in enumerate(PEOPLE)}   # position on the People sheet
+SLOT_INDEX = {title.name: index for index, title in enumerate(TITLES)}       # position on the Catalog sheet
 SKIP_OPTIONAL = 0.55        # optional titles most people simply don't have
 SKIP_REQUIRED = 0.12        # a few required titles stay uninstalled so "Missing" shows up
 OUTDATED_CHANCE = 0.15
