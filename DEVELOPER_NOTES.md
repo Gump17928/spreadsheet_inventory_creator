@@ -8,8 +8,8 @@ Read `CODING_RULES.md` first. Run `run_tests.bat` before and after every change.
 |---|---|
 | `build_workbook.py` | Driver: `create_structure` (all sheets), `add_starter_content`, `add_demo_content`; saves the template and the example. |
 | `layout.py` | Sheet names, capacities (`N_PEOPLE`, `N_TITLES`, ...), first data row, every sheet's column letters (`Inv`, `Cat`, `Ppl`, `Lst`, `Mat`), and the row-position helpers (`inventory_row`, `people_row_for`, `catalog_row_for`, `slot_for`). The one place that says "where things are". |
-| `vocab.py` | The fixed words (`Status`, `InstallState`, `Applicability`, `Active`, ...) as `StrEnum`s, plus each status's colours, symbol and explanation. |
-| `styles.py` | **The theme** (fonts, sizes, palette at the top), `Col`, header/body styling, `status_colours` (adds the symbol), `unlock`, `protect_sheet`, page setup. |
+| `vocab.py` | The fixed words (`Status`, `InstallState`, `Applicability`, `Active`, ...) as `StrEnum`s, plus each status's colours and explanation. |
+| `styles.py` | **The theme** (fonts, sizes, palette at the top), `Col`, header/body styling, `status_colours`, `unlock`, `protect_sheet`, page setup. |
 | `validation.py` | Data-validation rules (dropdown, date, count, text length, unique). |
 | `cell_values.py` | `number_if_plain`: `"2026"` -> `2026` so Excel shows no "number stored as text" warning. |
 | `refs.py` | Absolute references: ranges (`inv(Inv.STATUS)`), single cells (`at(sheet, col, row)`), `growing_list`. |
@@ -52,7 +52,7 @@ If you change a formula, add or change a case in `CASES` / `BLANK_CASES` in `tes
 | Retiring | `People!Active = "No"` blanks the hidden Live column, so the Inventory status, Matrix row and Dashboard counts drop out; the data stays. |
 | Spare capacity | Slots with no title or person show blank; `clear_when_blank` conditional formats remove fill and borders. |
 | Theme | Everything visual is the block at the top of `styles.py` plus `_COLOURS` in `vocab.py`. |
-| Status symbols | `status_colours` adds a number format (`"● "@`) to each status's conditional format, so the symbol is display-only and `COUNTIF` still sees the plain word. |
+| Status colours | Each status is a conditional format keyed on the plain status word (`status_colours`), so `COUNTIF` and the colours always agree. |
 | Protection | No password. Typed columns are unlocked (`unlock`); formulas are locked. Reports, People, Catalog and Role Defaults are protected. |
 | Recalculation | `fullCalcOnLoad` is set; openpyxl stores no cached results, so Excel computes everything on open. |
 
@@ -63,7 +63,6 @@ Facts learned the hard way (each is also commented next to the code that depends
 - Excel's `SpecialCells` raises COM error `-2146827284` when nothing matches; `excel_com.error_cells` treats that as "no errors".
 - A version like `3.9` is the number 3.9, which is greater than `3.12`. Only year-style versions compare reliably as numbers.
 - `StrEnum` members format as plain text in f-strings; a test checks no enum name leaks into a formula.
-- Conditional-format number formats need unique ids of 164 or more (`SYMBOL_FORMAT_ID_BASE`).
 - A protected sheet blocks sorting, and Excel only allows filtering on a protected sheet if an autofilter is already set (it is).
 
 ## Not yet done

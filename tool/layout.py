@@ -8,7 +8,7 @@ HEADER_ROW = 5
 FIRST_ROW = 6
 
 N_PEOPLE = 100
-N_TITLES = 30
+N_TITLES = 100
 N_ROLES = 30
 N_RECORDS = N_PEOPLE * N_TITLES    # Inventory has one row for every person and every title slot
 N_LIST_SLOTS = 20       # rows in each editable list on the Lists sheet

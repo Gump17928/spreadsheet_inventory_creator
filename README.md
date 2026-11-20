@@ -26,7 +26,7 @@ or N/A depending on the role.
 Adding someone or something: type in the next empty row of People or Catalog. Never insert, delete or sort rows
 there (they are protected, without a password, to stop it). Retire a leaver with Active = No.
 
-Capacity: 100 people, 30 titles, 30 roles, 3,000 Inventory rows.
+Capacity: 100 people, 100 titles, 30 roles, 10,000 Inventory rows.
 
 ## Rebuilding (optional)
 

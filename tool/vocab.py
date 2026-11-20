@@ -84,23 +84,22 @@ class StatusStyle:
     fill: str
     font: str
     bold: bool
-    symbol: str      # shown before the status text by the conditional format, so status reads without colour
     meaning: str
     action: str
 
 
-_COLOURS = {   # status -> (cell fill, font colour, bold, symbol)
-    Status.INSTALLED: ("DCE4C6", "2F3D12", False, "●"),
-    Status.OUTDATED: ("EFDCA0", "4F3A05", False, "▲"),
-    Status.EXPIRING: ("EBC7A0", "5E2E08", False, "▲"),
-    Status.LICENSE_ISSUE: ("8E1B1B", "FFFFFF", True, "✕"),
-    Status.VERIFY: ("D3DAE2", "26323F", False, "◆"),
-    Status.PENDING: ("DCD6E6", "3F3558", False, "…"),
-    Status.MISSING: ("B3202A", "FFFFFF", True, "✕"),
-    Status.REVIEW: ("E6D0DA", "5A2342", False, "▲"),
-    Status.UNKNOWN: ("EFE8D2", "4D4524", False, "?"),
-    Status.NOT_INSTALLED: ("F6F3EE", "6B6254", False, "○"),
-    Status.NOT_APPLICABLE: ("DAD6CF", "6E6A63", False, "–"),
+_COLOURS = {   # status -> (cell fill, font colour, bold)
+    Status.INSTALLED: ("DCE4C6", "2F3D12", False),
+    Status.OUTDATED: ("EFDCA0", "4F3A05", False),
+    Status.EXPIRING: ("EBC7A0", "5E2E08", False),
+    Status.LICENSE_ISSUE: ("8E1B1B", "FFFFFF", True),
+    Status.VERIFY: ("D3DAE2", "26323F", False),
+    Status.PENDING: ("DCD6E6", "3F3558", False),
+    Status.MISSING: ("B3202A", "FFFFFF", True),
+    Status.REVIEW: ("E6D0DA", "5A2342", False),
+    Status.UNKNOWN: ("EFE8D2", "4D4524", False),
+    Status.NOT_INSTALLED: ("F6F3EE", "6B6254", False),
+    Status.NOT_APPLICABLE: ("DAD6CF", "6E6A63", False),
 }
 _TEXT = {      # status -> (meaning, what to do)
     Status.INSTALLED: ("Installed, current, licensed and recently verified.", "Nothing."),

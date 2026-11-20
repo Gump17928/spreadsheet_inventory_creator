@@ -4,10 +4,8 @@ Black type, light-rose headers, brass rules, hairline row dividers. Change the c
 """
 from dataclasses import dataclass
 
-from openpyxl.formatting.rule import CellIsRule, FormulaRule, Rule
+from openpyxl.formatting.rule import CellIsRule, FormulaRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Protection, Side
-from openpyxl.styles.differential import DifferentialStyle
-from openpyxl.styles.numbers import NumberFormat
 
 from layout import FIRST_ROW, HEADER_ROW, STALE_DAYS, WARN_DAYS, col_index, col_letter
 from vocab import STATUS_STYLE, Applicability
@@ -37,7 +35,6 @@ TAB_INPUT, TAB_REFERENCE, TAB_REPORT, TAB_GUIDE = BRASS, "262626", "D98880", "8C
 
 WIDTH_SCALE = 1.2        # Times New Roman 12pt is wider than the Normal-style font the width unit is measured in
 HEADER_HEIGHT = 48
-SYMBOL_FORMAT_ID_BASE = 200   # custom number-format ids must be unique and >= 164
 
 HAIRLINE = Side(style="thin", color=RULE)
 BORDER = Border(bottom=HAIRLINE)
@@ -141,12 +138,11 @@ def style_columns(ws, cols, last_row):
 
 
 def status_colours(ws, cells):
-    """Colour cells holding a status name and put its symbol in front (display only; the value is unchanged)."""
-    for index, (status, style) in enumerate(STATUS_STYLE.items()):
-        symbol_format = NumberFormat(numFmtId=SYMBOL_FORMAT_ID_BASE + index, formatCode=f'"{style.symbol} "@')
-        dxf = DifferentialStyle(font=Font(color=style.font, bold=style.bold), fill=fill(style.fill),
-                                numFmt=symbol_format)
-        ws.conditional_formatting.add(cells, Rule(type="cellIs", operator="equal", formula=[f'"{status}"'], dxf=dxf))
+    """Colour cells holding a status name."""
+    for status, style in STATUS_STYLE.items():
+        ws.conditional_formatting.add(cells, CellIsRule(
+            operator="equal", formula=[f'"{status}"'], fill=fill(style.fill),
+            font=Font(color=style.font, bold=style.bold)))
 
 
 def applicability_colours(ws, cells):

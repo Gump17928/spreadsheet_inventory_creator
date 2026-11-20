@@ -65,7 +65,7 @@ def _status_table(ws):
         header_cell(ws, FIRST_ROW - 1, index, text)
     row = FIRST_ROW
     for status, style in STATUS_STYLE.items():
-        ws[f"A{row}"], ws[f"B{row}"], ws[f"C{row}"] = f"{style.symbol} {status.value}", style.meaning, style.action
+        ws[f"A{row}"], ws[f"B{row}"], ws[f"C{row}"] = status.value, style.meaning, style.action
         ws[f"A{row}"].fill = fill(style.fill)
         ws[f"A{row}"].font = font(SIZE_BODY, True, style.font)
         ws[f"A{row}"].alignment = Alignment(horizontal="center")
