@@ -9,6 +9,7 @@ import inventory_formulas as formulas
 import validation
 from cell_values import number_if_plain
 from layout import FIRST_ROW, HEADER_ROW, INV_LAST, Inv, Sheet, inventory_row
+from sheet_lists import VERIFIER_LIST
 from styles import (
     MUTED,
     TAB_INPUT,
@@ -82,6 +83,8 @@ def _add_validation(ws):
                          "Only fill in if this person's license differs from the Catalog expiry.")
     validation.date_rule(ws, _cells(Inv.VERIFIED_ON), "Last Verified",
                          "Date someone confirmed this on the machine.", not_future=True)
+    validation.list_rule(ws, _cells(Inv.VERIFIED_BY), f"={VERIFIER_LIST}", "Verified By",
+                         "Who confirmed this on the machine. Add names on the Lists sheet.")
     validation.short_text_rule(ws, _cells(Inv.VERSION), "Version", "e.g. 2026, 2025 R2, 3.12.1")
 
 

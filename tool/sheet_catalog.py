@@ -6,6 +6,7 @@ from cell_values import number_if_plain
 from demo_data import LICENSE_DETAILS
 from layout import CATALOG_LAST, FIRST_ROW, HEADER_ROW, WARN_DAYS, Cat, Inv, Sheet
 from refs import inv
+from sheet_lists import LICENSE_ADMIN_LIST, VENDOR_LIST
 from starter_data import TITLES
 from styles import (
     CRIMSON,
@@ -89,6 +90,8 @@ def _add_validation(ws):
     validation.list_rule(ws, cells(Cat.GROUP), "=GroupList", "Group / Suite", "Product family, e.g. Autodesk.")
     validation.list_rule(ws, cells(Cat.CATEGORY), "=CategoryList", "Category", "What kind of software this is.")
     validation.list_rule(ws, cells(Cat.MODEL), "=LicenseModelList", "License Model", "How this title is licensed.")
+    validation.list_rule(ws, cells(Cat.VENDOR), f"={VENDOR_LIST}", "Vendor", "Pick a vendor.")
+    validation.list_rule(ws, cells(Cat.ADMIN), f"={LICENSE_ADMIN_LIST}", "License Admin", "Who manages this license.")
     validation.date_rule(ws, cells(Cat.EXPIRY), "Expiry", "License/contract end date. Blank for perpetual or free.")
     validation.count_rule(ws, cells(Cat.SEATS), "Seats", "Total seats or licenses purchased.")
     validation.unique_rule(ws, cells(Cat.NAME), f"${Cat.NAME}${FIRST_ROW}:${Cat.NAME}${CATALOG_LAST}",

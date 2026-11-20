@@ -26,7 +26,10 @@ or N/A depending on the role.
 Adding someone or something: type in the next empty row of People or Catalog. Never insert, delete or sort rows
 there (they are protected, without a password, to stop it). Retire a leaver with Active = No.
 
-Capacity: 100 people, 100 titles, 30 roles, 10,000 Inventory rows.
+Dropdowns: Location, Manager, Vendor, License Admin and Verified By each read from a white list on the **Lists** sheet.
+Add a choice by typing it in the next empty cell of that list. Employee ID, Asset Tag and Name must be unique.
+
+Capacity: 100 people, 100 titles, 30 roles, 30 items in each editable list, 10,000 Inventory rows.
 
 ## Rebuilding (optional)
 

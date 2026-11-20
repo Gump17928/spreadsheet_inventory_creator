@@ -137,8 +137,19 @@ class WorkbookStructureTests(unittest.TestCase):
     def test_dropdown_names_are_defined(self):
         names = set(load_workbook(self.template).defined_names)
         expected = {"PeopleList", "RoleList", "InstallStates", "ApplicabilityList", "LicenseAssignList",
-                    "LicenseModelList", "GroupList", "CategoryList", "DeptList", "WarnDays", "StaleDays"}
+                    "LicenseModelList", "GroupList", "CategoryList", "DeptList", "WarnDays", "StaleDays",
+                    "LocationList", "ManagerList", "VendorList", "LicenseAdminList", "VerifierList"}
         self.assertLessEqual(expected, names)
+
+    def test_people_and_catalog_have_dropdowns_for_the_list_columns(self):
+        wb = load_workbook(self.template)
+        people = {rule.formula1 for rule in wb[Sheet.PEOPLE].data_validations.dataValidation if rule.type == "list"}
+        catalog = {rule.formula1 for rule in wb[Sheet.CATALOG].data_validations.dataValidation if rule.type == "list"}
+        inventory = {rule.formula1 for rule in wb[Sheet.INVENTORY].data_validations.dataValidation
+                     if rule.type == "list"}
+        self.assertLessEqual({"=DeptList", "=RoleList", "=LocationList", "=ManagerList"}, people)
+        self.assertLessEqual({"=VendorList", "=LicenseAdminList"}, catalog)
+        self.assertIn("=VerifierList", inventory)
 
     def test_inventory_dropdowns_cover_only_typed_columns(self):
         rules = load_workbook(self.template)[Sheet.INVENTORY].data_validations.dataValidation

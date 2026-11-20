@@ -11,8 +11,8 @@ N_PEOPLE = 100
 N_TITLES = 100
 N_ROLES = 30
 N_RECORDS = N_PEOPLE * N_TITLES    # Inventory has one row for every person and every title slot
-N_LIST_SLOTS = 20       # rows in each editable list on the Lists sheet
-N_SUMMARY_ROWS = 12     # rows in the Dashboard group and department tables
+N_LIST_SLOTS = 30       # rows in each editable list on the Lists sheet
+N_SUMMARY_ROWS = 30     # rows in the Dashboard group and department tables; matches the Lists slots they mirror
 
 PEOPLE_LAST = FIRST_ROW + N_PEOPLE - 1
 CATALOG_LAST = FIRST_ROW + N_TITLES - 1
@@ -98,8 +98,9 @@ class Ppl:
 class Lst:
     """Lists columns and setting cells."""
     INSTALL_STATE, APPLICABILITY, LICENSE_ASSIGN, LICENSE_MODEL, GROUP, CATEGORY, DEPARTMENT = "ABCDEFG"
-    SETTING_LABEL, SETTING_VALUE = "I", "J"
-    WARN_CELL, STALE_CELL = "J6", "J7"
+    LOCATION, MANAGER, VENDOR, LICENSE_ADMIN, VERIFIER = "HIJKL"
+    SETTING_LABEL, SETTING_VALUE = "N", "O"
+    WARN_CELL, STALE_CELL = "O6", "O7"
 
 
 class Mat:

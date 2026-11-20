@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from openpyxl.workbook.defined_name import DefinedName
 
+import demo_data
+import demo_inventory
 import refs
 import starter_data
 import validation
@@ -13,6 +15,13 @@ from vocab import Applicability, InstallState, LicenseAssign, LicenseModel, valu
 LIST_WIDTH = 26
 SETTING_LABEL_WIDTH = 34
 SETTING_VALUE_WIDTH = 12
+
+# Defined names of the lists that other sheets use as dropdown sources.
+LOCATION_LIST = "LocationList"
+MANAGER_LIST = "ManagerList"
+VENDOR_LIST = "VendorList"
+LICENSE_ADMIN_LIST = "LicenseAdminList"
+VERIFIER_LIST = "VerifierList"
 
 
 @dataclass(frozen=True)
@@ -40,6 +49,11 @@ LIST_COLUMNS = [
     ListColumn(Lst.GROUP, "Group / Suite", starter_data.GROUPS, True, "GroupList"),
     ListColumn(Lst.CATEGORY, "Category", starter_data.CATEGORIES, True, "CategoryList"),
     ListColumn(Lst.DEPARTMENT, "Department", starter_data.DEPARTMENTS, True, "DeptList"),
+    ListColumn(Lst.LOCATION, "Location", [], True, LOCATION_LIST),
+    ListColumn(Lst.MANAGER, "Manager / Supervisor", [], True, MANAGER_LIST),
+    ListColumn(Lst.VENDOR, "Vendor", starter_data.VENDORS, True, VENDOR_LIST),
+    ListColumn(Lst.LICENSE_ADMIN, "License Admin", [], True, LICENSE_ADMIN_LIST),
+    ListColumn(Lst.VERIFIER, "Verified By", [], True, VERIFIER_LIST),
 ]
 SETTINGS = [
     Setting("License warning window (days)", Lst.WARN_CELL, 60, WARN_DAYS),
@@ -75,7 +89,7 @@ def _write_settings(ws):
         style_cells(ws, f"{setting.cell}:{setting.cell}", align="center")
         validation.days_rule(ws, setting.cell)
     note(ws, f"{Lst.SETTING_LABEL}9",
-         "Tip: to add a group, category or department, type it in the next empty cell of its column.")
+         "Tip: to add an item to any white list, type it in the next empty cell of its column.")
 
 
 def _list_reference(column):
@@ -91,6 +105,20 @@ def _define_names(wb):
             setting.defined_name, attr_text=f"{Sheet.LISTS}!{_absolute(setting.cell)}")
     for column in LIST_COLUMNS:
         wb.defined_names[column.defined_name] = DefinedName(column.defined_name, attr_text=_list_reference(column))
+
+
+def _fill_items(ws, letter, items):
+    """Write `items` down a list's column from the first data row."""
+    for offset, item in enumerate(items):
+        ws[f"{letter}{FIRST_ROW + offset}"] = item
+
+
+def fill_demo(ws):
+    """Fake locations, managers, license admins and verifiers for the example workbook."""
+    _fill_items(ws, Lst.LOCATION, [demo_data.LOCATION])
+    _fill_items(ws, Lst.MANAGER, [demo_data.MANAGER_ENGINEERING, demo_data.MANAGER_BUSINESS])
+    _fill_items(ws, Lst.LICENSE_ADMIN, sorted({d.admin for d in demo_data.LICENSE_DETAILS.values()}))
+    _fill_items(ws, Lst.VERIFIER, list(demo_inventory.VERIFIERS))
 
 
 def create(wb):

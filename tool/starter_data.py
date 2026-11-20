@@ -44,6 +44,7 @@ TITLES = [
     SoftwareTitle("Python", "Open Source", CODE, "PSF", "3.12", LicenseModel.FREE),
 ]
 TITLE_NAMES = [title.name for title in TITLES]
+VENDORS = list(dict.fromkeys(title.vendor for title in TITLES))   # unique, in catalog order
 
 
 @dataclass(frozen=True)

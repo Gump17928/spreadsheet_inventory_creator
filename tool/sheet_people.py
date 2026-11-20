@@ -3,6 +3,7 @@ import validation
 from demo_data import BUSINESS_DEPARTMENT, LOCATION, MANAGER_BUSINESS, MANAGER_ENGINEERING, PEOPLE
 from dynamic_names import ROLE_LIST
 from layout import FIRST_ROW, HEADER_ROW, PEOPLE_LAST, Ppl, Sheet
+from sheet_lists import LOCATION_LIST, MANAGER_LIST
 from styles import TAB_REFERENCE, Col, page_setup, protect_sheet, style_columns, title_block, write_headers
 from vocab import Active, values
 
@@ -33,8 +34,10 @@ def create(wb):
                          "Role decides default software. Edit roles on the Role Defaults sheet.")
     validation.list_rule(ws, _cells(Ppl.ACTIVE), ACTIVE_CHOICES, "Active",
                          "Leave blank or Yes while they are here. Set No when they leave - do not delete the row.")
-    validation.unique_rule(ws, _cells(Ppl.NAME), f"${Ppl.NAME}${FIRST_ROW}:${Ppl.NAME}${PEOPLE_LAST}",
-                           f"{Ppl.NAME}{FIRST_ROW}", "name")
+    validation.list_rule(ws, _cells(Ppl.LOCATION), f"={LOCATION_LIST}", "Location", "Pick a location.")
+    validation.list_rule(ws, _cells(Ppl.MANAGER), f"={MANAGER_LIST}", "Manager", "Pick a manager or supervisor.")
+    for col, what in ((Ppl.NAME, "name"), (Ppl.EMPLOYEE_ID, "employee ID"), (Ppl.COMPUTER, "asset tag")):
+        validation.unique_rule(ws, _cells(col), f"${col}${FIRST_ROW}:${col}${PEOPLE_LAST}", f"{col}{FIRST_ROW}", what)
     ws.freeze_panes = f"B{FIRST_ROW}"
     ws.auto_filter.ref = f"{Ppl.NAME}{HEADER_ROW}:{Ppl.NOTES}{PEOPLE_LAST}"
     page_setup(ws, f"{HEADER_ROW}:{HEADER_ROW}")

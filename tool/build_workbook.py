@@ -57,6 +57,7 @@ def add_demo_content(wb, today=None):
     """Fake license numbers, people and installs for the example workbook."""
     today = today or date.today()
     sheet_catalog.fill_demo(wb[Sheet.CATALOG], today)
+    sheet_lists.fill_demo(wb[Sheet.LISTS])
     sheet_people.fill_demo(wb[Sheet.PEOPLE])
     sheet_inventory.write_records(wb[Sheet.INVENTORY], demo_inventory.make_records(today),
                                   demo_inventory.PERSON_INDEX, demo_inventory.SLOT_INDEX)

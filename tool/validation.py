@@ -16,7 +16,8 @@ def list_rule(ws, cells, source, title, prompt):
     """Dropdown. `source` is a formula such as '=PeopleList'."""
     _add(ws, cells, DataValidation(
         type="list", formula1=source, allow_blank=True,
-        showErrorMessage=True, errorTitle="Invalid entry", error="Pick a value from the dropdown list.",
+        showErrorMessage=True, errorTitle="Invalid entry",
+        error="Pick a value from the dropdown. To add a new choice, type it on the Lists sheet first.",
         showInputMessage=True, promptTitle=title, prompt=prompt))
 
 
@@ -55,4 +56,4 @@ def unique_rule(ws, cells, column_range, first_cell, what):
     """Reject a value that already exists in `column_range`."""
     _add(ws, cells, DataValidation(
         type="custom", formula1=f"COUNTIF({column_range},{first_cell})=1",
-        showErrorMessage=True, errorTitle="Duplicate", error=f"That {what} already exists. Names must be unique."))
+        showErrorMessage=True, errorTitle="Duplicate", error=f"That {what} is already used. Each must be unique."))
